@@ -1,0 +1,35 @@
+#include <SPI.h>
+#include <MFRC522.h>
+
+#define SS_PIN  21   // Pin SDA
+#define RST_PIN 5    // Pin RESET
+
+MFRC522 rfid(SS_PIN, RST_PIN);  // Tạo đối tượng MFRC522
+
+void setup() {
+  Serial.begin(115200);  // Khởi động Serial monitor
+  SPI.begin();           // Khởi động SPI bus
+  rfid.PCD_Init();       // Khởi động RFID reader
+  Serial.println("Đã sẵn sàng, hãy quét thẻ...");
+}
+
+void loop() {
+  // Kiểm tra xem có thẻ RFID nào được quét hay không
+  if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
+    Serial.print("ID thẻ RFID: ");
+    
+    // In ra ID thẻ
+    for (byte i = 0; i < rfid.uid.size; i++) {
+      Serial.print(rfid.uid.uidByte[i] < 0x10 ? " 0" : " ");
+      Serial.print(rfid.uid.uidByte[i], HEX);
+    }
+    
+    Serial.println();
+    
+    // Ngừng đọc thẻ
+    rfid.PICC_HaltA();
+    
+    // Chờ một chút trước khi tiếp tục
+    delay(1000);
+  }
+}
